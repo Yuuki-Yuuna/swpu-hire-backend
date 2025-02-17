@@ -14,11 +14,9 @@ export class UserService {
     private jwtService: JwtService
   ) {}
 
-  async login(encryptedUsername: string, encryptedPassword: string) {
-    const uname = AES.encrypt(encryptedUsername, cryptoKey).toString()
-    const pword = AES.encrypt(encryptedPassword, cryptoKey).toString()
-    const username = AES.decrypt(uname, cryptoKey).toString(enc.Utf8)
-    const password = AES.decrypt(pword, cryptoKey).toString(enc.Utf8)
+  async login(encUsername: string, encPassword: string) {
+    const username = AES.decrypt(encUsername, cryptoKey).toString(enc.Utf8)
+    const password = AES.decrypt(encPassword, cryptoKey).toString(enc.Utf8)
     const result = await this.userModel.findOne({ username, password }).exec()
     if (!result) {
       return createResponse(null, { code: HttpStatus.UNAUTHORIZED, message: '用户名或密码错误' })
