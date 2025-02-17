@@ -25,4 +25,13 @@ export class UserService {
     const payload = { sub: result.id as string, username: result.username }
     return createResponse({ token: this.jwtService.sign(payload) })
   }
+
+  async info(id: string) {
+    const result = await this.userModel.findById(id).exec()
+    if (!result) {
+      return createResponse(null, { code: HttpStatus.BAD_REQUEST, message: '用户不存在' })
+    }
+    const { username, studentName, graduationYear } = result
+    return createResponse({ id, username, studentName, graduationYear })
+  }
 }

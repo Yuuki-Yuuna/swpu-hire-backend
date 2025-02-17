@@ -1,6 +1,6 @@
-import { Body, Controller, Post } from '@nestjs/common'
+import { Body, Controller, Get, Post } from '@nestjs/common'
 import { UserService } from './user.service'
-import { PublicRoute } from './user.guard'
+import { PublicRoute, Token, JwtPayload } from './user.guard'
 
 @Controller('user')
 export class UserController {
@@ -10,5 +10,11 @@ export class UserController {
   @Post('login')
   login(@Body('username') username: string, @Body('password') password: string) {
     return this.userService.login(username, password)
+  }
+
+  @Get('info')
+  info(@Token() payload: JwtPayload) {
+    const { sub } = payload
+    return this.userService.info(sub)
   }
 }
