@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Post } from '@nestjs/common'
 import { UserService } from './user.service'
 import { PublicRoute, Token, JwtPayload } from './user.guard'
+import { ChangePasswordDto } from './uset.dto'
 
 @Controller('user')
 export class UserController {
@@ -16,5 +17,10 @@ export class UserController {
   info(@Token() payload: JwtPayload) {
     const { sub } = payload
     return this.userService.info(sub)
+  }
+
+  @Post('change-password')
+  changePassword(@Body() changePasswordDto: ChangePasswordDto, @Token() payload: JwtPayload) {
+    return this.userService.changePassword(payload, changePasswordDto)
   }
 }

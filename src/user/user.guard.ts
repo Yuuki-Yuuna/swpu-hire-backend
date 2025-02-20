@@ -10,10 +10,12 @@ import { Reflector } from '@nestjs/core'
 import { JwtService, TokenExpiredError } from '@nestjs/jwt'
 import { jwtKey } from '@/common/sercet-key'
 import { Request } from 'express'
+import { BlackListService } from './black-list.service'
 
 @Injectable()
 export class UserGuard implements CanActivate {
   constructor(
+    private balckListService: BlackListService,
     private jwtService: JwtService,
     private reflector: Reflector
   ) {}
@@ -34,9 +36,16 @@ export class UserGuard implements CanActivate {
     }
 
     try {
-      const payload = (await this.jwtService.verifyAsync(token, { secret: jwtKey })) as unknown
+      const payload: Omit<JwtPayload, 'token'> = await this.jwtService.verifyAsync(token, {
+        secret: jwtKey
+      })
+
+      if (await this.balckListService.isTokenBlacklisted(token)) {
+        throw new TokenExpiredError('Token已失效', new Date())
+      }
+
       // 在这里将 payload 挂载到请求对象上，以便可以在路由处理器中访问它
-      request['user'] = payload
+      request['user'] = { ...payload, token }
     } catch (error) {
       if (error instanceof TokenExpiredError) {
         throw error
@@ -62,6 +71,7 @@ export interface JwtPayload {
   username: string // 用户名
   iat: number // 签发时间
   exp: number // 过期时间
+  token: string // token字符串
 }
 export const Token = createParamDecorator((data: unknown, ctx: ExecutionContext) => {
   const request = ctx.switchToHttp().getRequest<Request>()
