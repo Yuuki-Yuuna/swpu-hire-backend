@@ -1,10 +1,18 @@
 import { Module } from '@nestjs/common'
+import { ServeStaticModule } from '@nestjs/serve-static'
 import { MongooseModule } from '@nestjs/mongoose'
 
-import { databaseUrl } from './common/sercet-key'
+import { databaseUrl, publicUrl } from './common/sercet-key'
 import { UserModule } from './user/user.module'
 
 @Module({
-  imports: [MongooseModule.forRoot(databaseUrl), UserModule]
+  imports: [
+    ServeStaticModule.forRoot({
+      rootPath: publicUrl,
+      serveRoot: '/static'
+    }),
+    MongooseModule.forRoot(databaseUrl),
+    UserModule
+  ]
 })
 export class AppModule {}

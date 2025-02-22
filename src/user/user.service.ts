@@ -30,13 +30,18 @@ export class UserService {
     return createResponse({ token: this.jwtService.sign(payload) })
   }
 
+  async quit(payload: JwtPayload) {
+    await this.blackListService.addTokenToBlacklist(payload) // token黑名单
+    return createResponse(null)
+  }
+
   async info(id: string) {
     const result = await this.userModel.findById(id).exec()
     if (!result) {
       return createResponse(null, { code: HttpStatus.BAD_REQUEST, message: '用户不存在' })
     }
-    const { username, studentName, graduationYear } = result
-    return createResponse({ id, username, studentName, graduationYear })
+    const { username, studentName, graduationYear, avatar } = result
+    return createResponse({ id, username, studentName, graduationYear, avatar })
   }
 
   async changePassword(payload: JwtPayload, changePasswordDto: ChangePasswordDto) {
@@ -53,6 +58,20 @@ export class UserService {
     await this.userModel.findByIdAndUpdate(id, { $set: { password: newPassword } })
 
     await this.blackListService.addTokenToBlacklist(payload) // token黑名单
+
+    return createResponse(null)
+  }
+
+  async uploadAvatar(id: string, httpUrl: string, avatar: Express.Multer.File) {
+    const userResult = await this.userModel.findById(id).exec()
+    if (!userResult) {
+      return createResponse(null, { code: HttpStatus.BAD_REQUEST, message: '用户不存在' })
+    }
+
+    const { filename } = avatar
+    const avatarUrl = `${httpUrl}/static/image/${filename}`
+
+    await this.userModel.findByIdAndUpdate(id, { $set: { avatar: avatarUrl } })
 
     return createResponse(null)
   }

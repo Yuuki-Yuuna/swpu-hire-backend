@@ -46,6 +46,9 @@ lerna-debug.log*
 .temp
 .tmp
 
+# 不传git太大了
+public 
+
 # Runtime data
 pids
 *.pid
