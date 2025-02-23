@@ -4,6 +4,8 @@ import { MongooseModule } from '@nestjs/mongoose'
 
 import { databaseUrl, publicUrl } from './common/sercet-key'
 import { UserModule } from './user/user.module'
+import { JobModule } from './job/job.module'
+import { CompanyModule } from './company/company.module'
 
 @Module({
   imports: [
@@ -12,7 +14,9 @@ import { UserModule } from './user/user.module'
       serveRoot: '/static'
     }),
     MongooseModule.forRoot(databaseUrl),
-    UserModule
+    UserModule,
+    JobModule,
+    CompanyModule
   ]
 })
 export class AppModule {}
