@@ -1,9 +1,8 @@
-import { Injectable } from '@nestjs/common'
+import { HttpStatus, Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
 import { createResponse } from '@/common/response'
 import { Job } from './schema/job.schema'
-import { RecommendJobData } from './job.interface'
 import { RecommendDto } from './job.dto'
 
 @Injectable()
@@ -15,33 +14,18 @@ export class JobService {
     const { page, limit } = recommendDto
     const skip = (page - 1) * limit
 
-    const [result] = await this.jobModel.aggregate<{
-      data: RecommendJobData[]
-      count: [{ total: number }]
-    }>([
-      {
-        $facet: {
-          data: [
-            { $skip: skip }, // 跳过前面的文档
-            { $limit: limit }, // 限制返回的文档数量
-            {
-              $lookup: {
-                from: 'company',
-                localField: 'companyId',
-                foreignField: '_id',
-                as: 'company'
-              }
-            },
-            { $unwind: '$company' }
-          ],
-          count: [{ $count: 'total' }]
-        }
-      }
-    ])
-
-    const { data, count } = result
-    const [{ total }] = count
+    const data = await this.jobModel.find().skip(skip).limit(limit).populate('company').exec()
+    const total = await this.jobModel.countDocuments().exec()
 
     return createResponse({ list: data, total })
+  }
+
+  async detail(id: string) {
+    const result = await this.jobModel.findById(id).populate('company').exec()
+    if (!result) {
+      return createResponse(null, { code: HttpStatus.BAD_REQUEST, message: '职位不存在' })
+    }
+
+    return createResponse(result)
   }
 }

@@ -77,3 +77,8 @@ export const Token = createParamDecorator((data: unknown, ctx: ExecutionContext)
   const request = ctx.switchToHttp().getRequest<Request>()
   return request['user'] as JwtPayload
 })
+
+export const UserId = createParamDecorator((data: unknown, ctx: ExecutionContext) => {
+  const request = ctx.switchToHttp().getRequest<Request>()
+  return (request['user'] as JwtPayload).sub
+})

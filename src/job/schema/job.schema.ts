@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
-import { Document } from 'mongoose'
+import { Types, Document, ObjectId } from 'mongoose'
+import { Company } from '@/company/schema/company.schema'
 
 @Schema({ collection: 'job' })
 export class Job extends Document {
@@ -33,8 +34,8 @@ export class Job extends Document {
   @Prop({ type: [String] })
   showSkills: string[] // 标签
 
-  @Prop({ required: true })
-  companyId: string // 企业id
+  @Prop({ type: Types.ObjectId, required: true, ref: Company.name })
+  company: ObjectId // 企业id
 
   @Prop({ required: true })
   userId: string // 发布者id

@@ -4,7 +4,7 @@ import { FileInterceptor } from '@nestjs/platform-express'
 import { Request } from 'express'
 import { diskStorage } from 'multer'
 import { UserService } from './user.service'
-import { PublicRoute, Token, JwtPayload } from './user.guard'
+import { PublicRoute, Token, JwtPayload, UserId } from './user.guard'
 import { ChangePasswordDto } from './uset.dto'
 import { publicImageUrl } from '@/common/sercet-key'
 
@@ -24,9 +24,8 @@ export class UserController {
   }
 
   @Get('info')
-  info(@Token() payload: JwtPayload) {
-    const { sub } = payload
-    return this.userService.info(sub)
+  info(@UserId() userId: string) {
+    return this.userService.info(userId)
   }
 
   @Post('change-password')
@@ -55,11 +54,10 @@ export class UserController {
   uploadAvatar(
     @UploadedFile() avatar: Express.Multer.File,
     @Req() request: Request,
-    @Token() payload: JwtPayload
+    @UserId() userId: string
   ) {
-    const { sub } = payload
     const { protocol, host } = request
     const httpUrl = `${protocol}://${host}`
-    return this.userService.uploadAvatar(sub, httpUrl, avatar)
+    return this.userService.uploadAvatar(userId, httpUrl, avatar)
   }
 }

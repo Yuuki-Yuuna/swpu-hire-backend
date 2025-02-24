@@ -1,5 +1,5 @@
-import { Controller, Get, Query, ValidationPipe } from '@nestjs/common'
-import { JwtPayload, Token } from '@/user/user.guard'
+import { Controller, Get, Query, UsePipes, ValidationPipe } from '@nestjs/common'
+import { UserId } from '@/user/user.guard'
 import { JobService } from './job.service'
 import { RecommendDto } from './job.dto'
 
@@ -8,11 +8,13 @@ export class JobController {
   constructor(private jobService: JobService) {}
 
   @Get('recommend')
-  recommend(
-    @Query(new ValidationPipe({ transform: true })) recommendDto: RecommendDto,
-    @Token() payload: JwtPayload
-  ) {
-    const { sub } = payload
-    return this.jobService.recommend(sub, recommendDto)
+  @UsePipes(new ValidationPipe({ transform: true }))
+  recommend(@Query() recommendDto: RecommendDto, @UserId() userId: string) {
+    return this.jobService.recommend(userId, recommendDto)
+  }
+
+  @Get('detail')
+  detail(@Query('id') id: string) {
+    return this.jobService.detail(id)
   }
 }
