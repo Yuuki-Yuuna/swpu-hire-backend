@@ -1,11 +1,17 @@
 import { Controller, Get, Query, UsePipes, ValidationPipe } from '@nestjs/common'
 import { UserId } from '@/user/user.guard'
 import { JobService } from './job.service'
-import { RecommendDto } from './job.dto'
+import { JobListDto, RecommendDto } from './job.dto'
 
 @Controller('job')
 export class JobController {
   constructor(private jobService: JobService) {}
+
+  @Get('list')
+  @UsePipes(new ValidationPipe({ transform: true }))
+  list(@Query() jobListDto: JobListDto) {
+    return this.jobService.list(jobListDto)
+  }
 
   @Get('recommend')
   @UsePipes(new ValidationPipe({ transform: true }))
