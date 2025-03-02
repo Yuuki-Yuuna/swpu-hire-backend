@@ -20,7 +20,7 @@ export class JobController {
   }
 
   @Get('detail')
-  detail(@Query('id') id: string) {
-    return this.jobService.detail(id)
+  detail(@Query('id') campanyId: string, @UserId() userId: string) {
+    return this.jobService.detail(campanyId, userId)
   }
 }

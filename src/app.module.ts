@@ -6,6 +6,7 @@ import { databaseUrl, publicUrl } from './common/sercet-key'
 import { UserModule } from './user/user.module'
 import { JobModule } from './job/job.module'
 import { CompanyModule } from './company/company.module'
+import { InterviewModule } from './interview/interview.module'
 
 @Module({
   imports: [
@@ -16,7 +17,8 @@ import { CompanyModule } from './company/company.module'
     MongooseModule.forRoot(databaseUrl),
     UserModule,
     JobModule,
-    CompanyModule
+    CompanyModule,
+    InterviewModule
   ]
 })
 export class AppModule {}

@@ -3,12 +3,16 @@ import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
 import { createQuery } from '@/common/query'
 import { createResponse } from '@/common/response'
+import { Interview } from '@/interview/schema/interview.schema'
 import { Job } from './schema/job.schema'
 import { JobListDto, RecommendDto } from './job.dto'
 
 @Injectable()
 export class JobService {
-  constructor(@InjectModel(Job.name) private jobModel: Model<Job>) {}
+  constructor(
+    @InjectModel(Job.name) private jobModel: Model<Job>,
+    @InjectModel(Interview.name) private interviewModal: Model<Interview>
+  ) {}
 
   async list(jobListDto: JobListDto) {
     const { page, limit, input, city, companySize, salaryRequirement } = jobListDto
@@ -75,12 +79,14 @@ export class JobService {
     return createResponse({ list: data, total })
   }
 
-  async detail(id: string) {
-    const result = await this.jobModel.findById(id).populate('company').exec()
+  async detail(companyId: string, userId: string) {
+    const result = await this.jobModel.findById(companyId).populate('company').exec()
     if (!result) {
       return createResponse(null, { code: HttpStatus.BAD_REQUEST, message: '职位不存在' })
     }
 
-    return createResponse(result)
+    const isApply = await this.interviewModal.exists({ userId, jobId: result.id })
+
+    return createResponse({ ...result.toObject(), isApply: !!isApply })
   }
 }
