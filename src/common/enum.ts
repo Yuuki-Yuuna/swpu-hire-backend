@@ -1,3 +1,9 @@
+export enum UserType {
+  Student, // 学生
+  Company, // 企业
+  School // 学校
+}
+
 export enum ApplyStatus {
   End, // 流程结束
   Apply, // 已申请

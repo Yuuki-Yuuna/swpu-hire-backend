@@ -36,12 +36,12 @@ export class UserService {
   }
 
   async info(id: string) {
-    const result = await this.userModel.findById(id).exec()
+    const result = await this.userModel.findById(id).select('-password').exec()
     if (!result) {
       return createResponse(null, { code: HttpStatus.BAD_REQUEST, message: '用户不存在' })
     }
-    const { username, studentName, graduationYear, avatar } = result
-    return createResponse({ id, username, studentName, graduationYear, avatar })
+
+    return createResponse(result)
   }
 
   async changePassword(payload: JwtPayload, changePasswordDto: ChangePasswordDto) {
