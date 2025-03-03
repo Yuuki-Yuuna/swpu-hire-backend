@@ -7,6 +7,7 @@ import { UserModule } from './user/user.module'
 import { JobModule } from './job/job.module'
 import { CompanyModule } from './company/company.module'
 import { InterviewModule } from './interview/interview.module'
+import { ResumeModule } from './resume/resume.module'
 
 @Module({
   imports: [
@@ -18,7 +19,8 @@ import { InterviewModule } from './interview/interview.module'
     UserModule,
     JobModule,
     CompanyModule,
-    InterviewModule
+    InterviewModule,
+    ResumeModule
   ]
 })
 export class AppModule {}
