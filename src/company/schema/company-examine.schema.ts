@@ -1,8 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import { Document } from 'mongoose'
 
-@Schema({ collection: 'company' })
-export class Company extends Document {
+@Schema({ collection: 'company-examine' })
+export class CompanyExamine extends Document {
   @Prop({ required: true })
   companyName: string // 企业名称
 
@@ -34,4 +34,4 @@ export class Company extends Document {
   address?: string // 企业地址
 }
 
-export const CompanySchema = SchemaFactory.createForClass(Company)
+export const CompanyExamineSchema = SchemaFactory.createForClass(CompanyExamine)

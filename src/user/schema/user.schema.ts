@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
-import { Document } from 'mongoose'
+import { Document, ObjectId, Types } from 'mongoose'
 import { UserType } from '@/common/enum'
+import { Company } from '@/company/schema/company.schema'
 
 @Schema({ collection: 'user' })
 export class User extends Document {
@@ -16,14 +17,18 @@ export class User extends Document {
   @Prop()
   avatar: string
 
-  @Prop()
-  studentName: string // 学生姓名
+  /** 学生用户数据 */
 
   @Prop()
-  graduationYear: number
+  studentName?: string // 学生姓名
 
   @Prop()
-  adminName: string // 管理员姓名
+  graduationYear?: number // 毕业年份
+
+  /** 企业用户数据 */
+
+  @Prop({ type: Types.ObjectId, ref: Company.name })
+  company?: ObjectId // 企业id
 }
 
 export const UserSchema = SchemaFactory.createForClass(User)
