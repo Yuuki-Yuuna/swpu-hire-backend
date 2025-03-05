@@ -1,5 +1,13 @@
-import { IsInt, IsOptional, IsString } from 'class-validator'
+import { IsBoolean, IsInt, IsOptional, IsString } from 'class-validator'
 import { Type } from 'class-transformer'
+
+export class ExameineReviewDto {
+  @IsString()
+  companyId: string
+
+  @IsBoolean()
+  isApproved: boolean
+}
 
 export class CompanyEditDto {
   @IsString()

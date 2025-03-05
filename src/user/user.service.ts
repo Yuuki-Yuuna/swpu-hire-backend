@@ -3,6 +3,7 @@ import { JwtService } from '@nestjs/jwt'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
 import { AES, enc } from 'crypto-js'
+import { UserType } from '@/common/enum'
 import { createResponse } from '@/common/response'
 import { cryptoKey } from '@/common/sercet-key'
 import { BlackListService } from './black-list.service'
@@ -39,6 +40,9 @@ export class UserService {
     const result = await this.userModel.findById(id).select('-password').exec()
     if (!result) {
       return createResponse(null, { code: HttpStatus.BAD_REQUEST, message: '用户不存在' })
+    }
+    if (result.userType === UserType.Company) {
+      await result.populate('company')
     }
 
     return createResponse(result)

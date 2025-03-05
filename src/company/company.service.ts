@@ -6,7 +6,7 @@ import { createResponse } from '@/common/response'
 import { User } from '@/user/schema/user.schema'
 import { CompanyExamine } from './schema/company-examine.schema'
 import { Company } from './schema/company.schema'
-import { CompanyEditDto } from './company.dto'
+import { CompanyEditDto, ExameineReviewDto } from './company.dto'
 
 @Injectable()
 export class CompanyService {
@@ -34,6 +34,36 @@ export class CompanyService {
 
     const result = await this.companyExamineModel.findById(user.company)
     return createResponse(result)
+  }
+
+  async listExamine(userId: string) {
+    const user = await this.userModel.findById(userId)
+    if (user?.userType !== UserType.School) {
+      return createResponse(null, { code: HttpStatus.BAD_REQUEST, message: '非法用户' })
+    }
+
+    const result = await this.companyExamineModel.find()
+    return createResponse(result)
+  }
+
+  async reviewExamine(userId: string, exameineReviewDto: ExameineReviewDto) {
+    const user = await this.userModel.findById(userId)
+    if (user?.userType !== UserType.School) {
+      return createResponse(null, { code: HttpStatus.BAD_REQUEST, message: '非法用户' })
+    }
+
+    const { companyId, isApproved } = exameineReviewDto
+    const company = await this.companyExamineModel.findById(companyId)
+    if (!company) {
+      return createResponse(null, { code: HttpStatus.BAD_REQUEST, message: '企业不存在' })
+    }
+
+    if (isApproved) {
+      await this.companyModel.findByIdAndUpdate(companyId, { $set: company })
+    }
+    await this.companyExamineModel.findByIdAndDelete(companyId)
+
+    return createResponse(null)
   }
 
   async edit(userId: string, companyEditDto: CompanyEditDto) {

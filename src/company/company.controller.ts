@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Post } from '@nestjs/common'
 import { UserId } from '@/user/user.guard'
 import { CompanyService } from './company.service'
-import { CompanyEditDto } from './company.dto'
+import { CompanyEditDto, ExameineReviewDto } from './company.dto'
 
 @Controller('company')
 export class CompanyController {
@@ -15,6 +15,16 @@ export class CompanyController {
   @Get('info-examine')
   infoExamine(@UserId() userId: string) {
     return this.companyService.infoExamine(userId)
+  }
+
+  @Get('list-examine')
+  listExamine(@UserId() userId: string) {
+    return this.companyService.listExamine(userId)
+  }
+
+  @Post('review-examine')
+  reviewExamine(@UserId() userId: string, @Body() exameineReviewDto: ExameineReviewDto) {
+    return this.companyService.reviewExamine(userId, exameineReviewDto)
   }
 
   @Post('edit')
