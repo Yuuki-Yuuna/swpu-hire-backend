@@ -1,15 +1,18 @@
 import { HttpStatus, Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
-import { Model } from 'mongoose'
+import { Model, Types } from 'mongoose'
 import { createQuery } from '@/common/query'
 import { createResponse } from '@/common/response'
+import { User } from '@/user/schema/user.schema'
 import { Interview } from '@/interview/schema/interview.schema'
 import { Job } from './schema/job.schema'
-import { JobListDto, RecommendDto } from './job.dto'
+import { JobListDto, JobPublishDto, JobRecommendDto } from './job.dto'
+import { UserType } from '@/common/enum'
 
 @Injectable()
 export class JobService {
   constructor(
+    @InjectModel(User.name) private userModel: Model<User>,
     @InjectModel(Job.name) private jobModel: Model<Job>,
     @InjectModel(Interview.name) private interviewModal: Model<Interview>
   ) {}
@@ -69,7 +72,7 @@ export class JobService {
   }
 
   // todo: 根据user做推荐，先全返回
-  async recommend(id: string, recommendDto: RecommendDto) {
+  async recommend(id: string, recommendDto: JobRecommendDto) {
     const { page, limit } = recommendDto
     const skip = (page - 1) * limit
 
@@ -79,8 +82,8 @@ export class JobService {
     return createResponse({ list: data, total })
   }
 
-  async detail(companyId: string, userId: string) {
-    const result = await this.jobModel.findById(companyId).populate('company').exec()
+  async detail(jobId: string, userId: string) {
+    const result = await this.jobModel.findById(jobId).populate('company').exec()
     if (!result) {
       return createResponse(null, { code: HttpStatus.BAD_REQUEST, message: '职位不存在' })
     }
@@ -88,5 +91,66 @@ export class JobService {
     const isApply = await this.interviewModal.exists({ userId, jobId: result.id })
 
     return createResponse({ ...result.toObject(), isApply: !!isApply })
+  }
+
+  async detailByCompany(jobId: string, userId: string) {
+    const user = await this.userModel.findById(userId).populate('company').exec()
+    if (user?.userType !== UserType.Company || !user.company) {
+      return createResponse(null, { code: HttpStatus.BAD_REQUEST, message: '非法用户' })
+    }
+
+    const result = await this.jobModel.findById(jobId).exec()
+    return createResponse(result)
+  }
+
+  async listByCompany(userId: string) {
+    const user = await this.userModel.findById(userId).populate('company').exec()
+    if (user?.userType !== UserType.Company || !user.company) {
+      return createResponse(null, { code: HttpStatus.BAD_REQUEST, message: '非法用户' })
+    }
+
+    const { _id: companyId } = user.company
+    const result = await this.jobModel.find({ company: companyId }).exec()
+    return createResponse(result)
+  }
+
+  async publish(userId: string, jobPublishDto: JobPublishDto) {
+    const user = await this.userModel.findById(userId).populate('company').exec()
+    if (user?.userType !== UserType.Company || !user.company) {
+      return createResponse(null, { code: HttpStatus.BAD_REQUEST, message: '非法用户' })
+    }
+
+    const { _id: companyId } = user.company
+    const { jobId, ...rest } = jobPublishDto
+    const jobData = { ...rest, company: companyId, userId }
+    const result = await this.jobModel.findById(jobId)
+    if (result && !(result.company as Types.ObjectId).equals(companyId as Types.ObjectId)) {
+      return createResponse(null, { code: HttpStatus.BAD_REQUEST, message: '非法操作' })
+    }
+
+    if (!result) {
+      await this.jobModel.create(jobData)
+    } else {
+      await this.jobModel.findByIdAndUpdate(jobId, { $set: jobData })
+    }
+
+    return createResponse(null)
+  }
+
+  async delete(userId: string, jobId: string) {
+    const user = await this.userModel.findById(userId).populate('company').exec()
+    if (user?.userType !== UserType.Company || !user.company) {
+      return createResponse(null, { code: HttpStatus.BAD_REQUEST, message: '非法用户' })
+    }
+
+    const { _id: companyId } = user.company
+    const result = await this.jobModel.findById(jobId)
+    if (result && !(result.company as Types.ObjectId).equals(companyId as Types.ObjectId)) {
+      return createResponse(null, { code: HttpStatus.BAD_REQUEST, message: '非法操作' })
+    }
+
+    await this.jobModel.findByIdAndDelete(jobId)
+
+    return createResponse(null)
   }
 }

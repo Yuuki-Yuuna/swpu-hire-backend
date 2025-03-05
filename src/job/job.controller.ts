@@ -1,7 +1,7 @@
-import { Controller, Get, Query } from '@nestjs/common'
+import { Body, Controller, Get, Post, Query } from '@nestjs/common'
 import { UserId } from '@/user/user.guard'
 import { JobService } from './job.service'
-import { JobListDto, RecommendDto } from './job.dto'
+import { JobListDto, JobPublishDto, JobRecommendDto } from './job.dto'
 
 @Controller('job')
 export class JobController {
@@ -13,12 +13,32 @@ export class JobController {
   }
 
   @Get('recommend')
-  recommend(@Query() recommendDto: RecommendDto, @UserId() userId: string) {
+  recommend(@Query() recommendDto: JobRecommendDto, @UserId() userId: string) {
     return this.jobService.recommend(userId, recommendDto)
   }
 
   @Get('detail')
-  detail(@Query('id') campanyId: string, @UserId() userId: string) {
-    return this.jobService.detail(campanyId, userId)
+  detail(@Query('id') jobId: string, @UserId() userId: string) {
+    return this.jobService.detail(jobId, userId)
+  }
+
+  @Get('list-company')
+  listByCompany(@UserId() userId: string) {
+    return this.jobService.listByCompany(userId)
+  }
+
+  @Get('detail-company')
+  detailByCompany(@Query('id') jobId: string, @UserId() userId: string) {
+    return this.jobService.detailByCompany(jobId, userId)
+  }
+
+  @Post('publish')
+  publish(@UserId() userId: string, @Body() jobPublishDto: JobPublishDto) {
+    return this.jobService.publish(userId, jobPublishDto)
+  }
+
+  @Post('delete')
+  delete(@UserId() userId: string, @Body('id') jobId: string) {
+    return this.jobService.delete(userId, jobId)
   }
 }

@@ -2,34 +2,28 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import { Types, Document, PopulatedDoc } from 'mongoose'
 import { Company } from '@/company/schema/company.schema'
 
-@Schema({ collection: 'job' })
+@Schema({ collection: 'job', timestamps: true })
 export class Job extends Document {
   @Prop({ required: true })
   jobName: string
 
-  // @Prop()
-  // postDescription: string // 职位描述
-
-  // @Prop()
-  // position: number // 岗位编码
-
-  // @Prop()
-  // positionName: string // 岗位名
-
   @Prop({ required: true })
-  location: number // adcode编码
+  location: string // adcode编码
 
   @Prop({ required: true })
   locationName: string // 城市
-
-  // @Prop()
-  // address: string // 地址
 
   @Prop()
   degreeName: string // 学历
 
   @Prop()
   salaryDesc: string // 薪资描述
+
+  @Prop({ required: true })
+  salaryMin: number
+
+  @Prop({ required: true })
+  salaryMax: number
 
   @Prop({ type: [String] })
   showSkills: string[] // 标签
@@ -39,6 +33,12 @@ export class Job extends Document {
 
   @Prop({ required: true })
   userId: string // 发布者id
+
+  @Prop({ required: true, default: 0 })
+  candidateTotal: number // 投递总数
+
+  @Prop()
+  description: string //岗位描述
 }
 
 export const JobSchema = SchemaFactory.createForClass(Job)
