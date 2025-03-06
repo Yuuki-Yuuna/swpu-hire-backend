@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import { Document, Types, ObjectId } from 'mongoose'
+import { Company } from '@/company/schema/company.schema'
 import { User } from '@/user/schema/user.schema'
 import { Job } from '@/job/schema/job.schema'
 import { ApplyStatus } from '@/common/enum'
@@ -12,6 +13,9 @@ export class Interview extends Document {
   @Prop({ type: Types.ObjectId, required: true, ref: Job.name })
   jobId: ObjectId // 岗位id
 
+  @Prop({ type: Types.ObjectId, required: true, ref: Company.name })
+  companyId: ObjectId // 企业id
+
   @Prop({ required: true })
   jobName: string // 岗位名称
 
@@ -23,6 +27,9 @@ export class Interview extends Document {
 
   @Prop({ required: true })
   status: ApplyStatus // 状态
+
+  @Prop()
+  description?: string // 附件内容
 }
 
 export const InterviewSchema = SchemaFactory.createForClass(Interview)
