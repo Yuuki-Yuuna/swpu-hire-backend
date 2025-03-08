@@ -18,6 +18,12 @@ export class UserController {
     return this.userService.login(username, password)
   }
 
+  @PublicRoute()
+  @Post('sign')
+  sing(@Body('username') username: string, @Body('password') password: string) {
+    return this.userService.sign(username, password)
+  }
+
   @Post('quit')
   quit(@Token() payload: JwtPayload) {
     return this.userService.quit(payload)

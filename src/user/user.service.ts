@@ -7,6 +7,7 @@ import { UserType } from '@/common/enum'
 import { createResponse } from '@/common/response'
 import { cryptoKey } from '@/common/sercet-key'
 import { BlackListService } from './black-list.service'
+import { Company } from '@/company/schema/company.schema'
 import { User } from './schema/user.schema'
 import { ChangePasswordDto } from './uset.dto'
 import { JwtPayload } from './user.guard'
@@ -15,6 +16,7 @@ import { JwtPayload } from './user.guard'
 export class UserService {
   constructor(
     @InjectModel(User.name) private userModel: Model<User>,
+    @InjectModel(Company.name) private companyModel: Model<Company>,
     private blackListService: BlackListService,
     private jwtService: JwtService
   ) {}
@@ -26,6 +28,35 @@ export class UserService {
     if (!result) {
       return createResponse(null, { code: HttpStatus.UNAUTHORIZED, message: '用户名或密码错误' })
     }
+
+    const payload = { sub: result.id as string, username: result.username }
+    return createResponse({ token: this.jwtService.sign(payload) })
+  }
+
+  async sign(encUsername: string, encPassword: string) {
+    const username = AES.decrypt(encUsername, cryptoKey).toString(enc.Utf8)
+    const password = AES.decrypt(encPassword, cryptoKey).toString(enc.Utf8)
+    const exist = await this.userModel.exists({ username })
+    if (exist) {
+      return createResponse(null, { code: HttpStatus.BAD_REQUEST, message: '用户名重复' })
+    }
+
+    // 只能注册企业的，别的身份直接在数据库加
+    const company = await this.companyModel.create({
+      companyName: '未认证企业',
+      companySize: 0,
+      companySizeName: '0-20人',
+      companyNature: 5,
+      companyNatureName: '民企',
+      companyType: '无类型',
+      creditCode: '10000'
+    })
+    const result = await this.userModel.create({
+      username,
+      password,
+      userType: UserType.Company,
+      company: company._id
+    })
 
     const payload = { sub: result.id as string, username: result.username }
     return createResponse({ token: this.jwtService.sign(payload) })
@@ -76,6 +107,12 @@ export class UserService {
     const avatarUrl = `${httpUrl}/static/image/${filename}`
 
     await this.userModel.findByIdAndUpdate(id, { $set: { avatar: avatarUrl } })
+
+    if (userResult.userType === UserType.Company) {
+      await this.companyModel.findByIdAndUpdate(userResult.company, {
+        $set: { companyLogo: avatarUrl }
+      })
+    }
 
     return createResponse(null)
   }

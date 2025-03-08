@@ -12,6 +12,11 @@ export class JobController {
     return this.jobService.list(jobListDto)
   }
 
+  @Get('lastest-list')
+  lastestList(@Query() jobListDto: JobListDto) {
+    return this.jobService.lastestList(jobListDto)
+  }
+
   @Get('recommend')
   recommend(@Query() recommendDto: JobRecommendDto, @UserId() userId: string) {
     return this.jobService.recommend(userId, recommendDto)

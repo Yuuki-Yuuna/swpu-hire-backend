@@ -1,6 +1,6 @@
 import { HttpStatus, Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
-import { Model, Types } from 'mongoose'
+import { Model, PipelineStage, Types } from 'mongoose'
 import { createQuery } from '@/common/query'
 import { createResponse } from '@/common/response'
 import { User } from '@/user/schema/user.schema'
@@ -17,10 +17,9 @@ export class JobService {
     @InjectModel(Interview.name) private interviewModal: Model<Interview>
   ) {}
 
-  async list(jobListDto: JobListDto) {
+  private createPipeline(jobListDto: JobListDto) {
     const { page, limit, input, city, companySize, salaryRequirement } = jobListDto
     const { query } = createQuery({ location: city, 'company.companySize': companySize })
-
     const salaryMap = new Map([
       [0, [0, 3]], // 3K以下
       [1, [3, 5]], // 3-5K
@@ -34,8 +33,7 @@ export class JobService {
     const salary = salaryRequirement !== undefined ? salaryMap.get(salaryRequirement) : undefined
     const [salaryMin, salaryMax] = salary || [-Infinity, Infinity]
 
-    const total = await this.jobModel.countDocuments().exec()
-    const data = await this.jobModel.aggregate<unknown>([
+    return [
       {
         $lookup: {
           from: 'company',
@@ -66,7 +64,23 @@ export class JobService {
       },
       { $skip: (page - 1) * limit },
       { $limit: limit }
-    ])
+    ] as PipelineStage[]
+  }
+
+  async list(jobListDto: JobListDto) {
+    const pipeline = this.createPipeline(jobListDto)
+    const total = await this.jobModel.countDocuments().exec()
+    const data = await this.jobModel.aggregate(pipeline)
+
+    return createResponse({ list: data, total })
+  }
+
+  async lastestList(jobListDto: JobListDto) {
+    const pipeline = this.createPipeline(jobListDto)
+    pipeline.unshift({ $sort: { updatedAt: -1 } })
+
+    const total = await this.jobModel.countDocuments().exec()
+    const data = await this.jobModel.aggregate(pipeline)
 
     return createResponse({ list: data, total })
   }
