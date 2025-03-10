@@ -7,6 +7,8 @@ export const publicUrl = path.resolve(rootDir, 'public')
 
 export const publicImageUrl = path.resolve(publicUrl, 'image')
 
+export const publicFileUrl = path.resolve(publicUrl, 'file')
+
 export const databaseUrl = 'mongodb://localhost:27017/swpu-hire'
 
 export const cryptoKey = enc.Utf8.parse('D.C. ～ダ･カーポ～').toString()

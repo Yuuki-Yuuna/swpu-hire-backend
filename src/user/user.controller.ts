@@ -45,7 +45,8 @@ export class UserController {
       storage: diskStorage({
         destination: publicImageUrl, // 文件存储路径
         filename: (req, file, callback) => {
-          const { originalname } = file
+          const originalname = Buffer.from(file.originalname, 'latin1').toString('utf8')
+          file.originalname = originalname
           const extname = path.extname(originalname)
           const basename = path.basename(originalname, extname)
           const timestamp = Date.now()

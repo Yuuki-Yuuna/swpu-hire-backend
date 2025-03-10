@@ -9,6 +9,7 @@ import { StudentModule } from './student/student.module'
 import { CompanyModule } from './company/company.module'
 import { InterviewModule } from './interview/interview.module'
 import { ResumeModule } from './resume/resume.module'
+import { ProtocolModule } from './protocol/protocol.module'
 
 @Module({
   imports: [
@@ -22,7 +23,8 @@ import { ResumeModule } from './resume/resume.module'
     StudentModule,
     CompanyModule,
     InterviewModule,
-    ResumeModule
+    ResumeModule,
+    ProtocolModule
   ]
 })
 export class AppModule {}
