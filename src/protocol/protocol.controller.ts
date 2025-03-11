@@ -6,14 +6,25 @@ import { diskStorage } from 'multer'
 import { ProtocolService } from './protocol.service'
 import { publicFileUrl } from '@/common/sercet-key'
 import { UserId } from '@/user/user.guard'
+import { ProToColReviewDto } from './protocol.dto'
 
 @Controller('protocol')
 export class ProtocolController {
   constructor(private protocolService: ProtocolService) {}
 
+  @Get('list')
+  list(@UserId() userId: string) {
+    return this.protocolService.list(userId)
+  }
+
   @Get('list-company')
   listByCompany(@UserId() userId: string) {
     return this.protocolService.listByCompany(userId)
+  }
+
+  @Get('list-school')
+  listBySchool(@UserId() userId: string) {
+    return this.protocolService.listBySchool(userId)
   }
 
   @Post('create')
@@ -44,5 +55,15 @@ export class ProtocolController {
     const { protocol, host } = request
     const httpUrl = `${protocol}://${host}`
     return this.protocolService.create(userId, studentId, file, httpUrl)
+  }
+
+  @Post('review')
+  review(@Body() reviewDto: ProToColReviewDto, @UserId() userId: string) {
+    return this.protocolService.review(userId, reviewDto)
+  }
+
+  @Get('sign-info')
+  signInfo(@UserId() userId: string) {
+    return this.protocolService.signInfo(userId)
   }
 }

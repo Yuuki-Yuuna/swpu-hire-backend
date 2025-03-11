@@ -18,5 +18,6 @@ export enum SignStatus {
   Start, // 企业发起
   Check, // 学生受理
   Review, // 学校审核
-  Done // 审核通过
+  Done, // 审核通过
+  Cancel // 协议取消
 }
