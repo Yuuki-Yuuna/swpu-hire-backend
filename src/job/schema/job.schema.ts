@@ -37,6 +37,9 @@ export class Job extends Document {
   @Prop({ required: true, default: 0 })
   candidateTotal: number // 投递总数
 
+  @Prop({ type: [String], default: [] as string[] })
+  collectUsers: string[] // 收藏岗位的用户
+
   @Prop()
   description: string //岗位描述
 }

@@ -85,6 +85,16 @@ export class JobService {
     return createResponse({ list: data, total })
   }
 
+  async collectList(userId: string, jobListDto: JobListDto) {
+    const pipeline = this.createPipeline(jobListDto)
+    pipeline.unshift({ $match: { collectUsers: userId } })
+
+    const total = await this.jobModel.countDocuments({ collectUsers: userId }).exec()
+    const data = await this.jobModel.aggregate(pipeline)
+
+    return createResponse({ list: data, total })
+  }
+
   // todo: 根据user做推荐，先全返回
   async recommend(id: string, recommendDto: JobRecommendDto) {
     const { page, limit } = recommendDto
@@ -103,8 +113,9 @@ export class JobService {
     }
 
     const isApply = await this.interviewModal.exists({ userId, jobId: result.id })
+    const isCollect = result.collectUsers.includes(userId)
 
-    return createResponse({ ...result.toObject(), isApply: !!isApply })
+    return createResponse({ ...result.toObject(), isApply: !!isApply, isCollect })
   }
 
   async detailByCompany(jobId: string, userId: string) {
@@ -164,6 +175,20 @@ export class JobService {
     }
 
     await this.jobModel.findByIdAndDelete(jobId)
+
+    return createResponse(null)
+  }
+
+  async collect(userId: string, jobId: string) {
+    const result = await this.jobModel.findById(jobId)
+    if (!result) {
+      return createResponse(null, { code: HttpStatus.BAD_REQUEST, message: '岗位不存在' })
+    }
+
+    const { collectUsers } = result
+    if (!collectUsers.includes(userId)) {
+      await result.updateOne({ $set: { collectUsers: [...collectUsers, userId] } })
+    }
 
     return createResponse(null)
   }

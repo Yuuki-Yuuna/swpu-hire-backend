@@ -17,6 +17,11 @@ export class JobController {
     return this.jobService.lastestList(jobListDto)
   }
 
+  @Get('collect-list')
+  collectList(@UserId() userId: string, @Query() jobListDto: JobListDto) {
+    return this.jobService.collectList(userId, jobListDto)
+  }
+
   @Get('recommend')
   recommend(@Query() recommendDto: JobRecommendDto, @UserId() userId: string) {
     return this.jobService.recommend(userId, recommendDto)
@@ -45,5 +50,10 @@ export class JobController {
   @Post('delete')
   delete(@UserId() userId: string, @Body('id') jobId: string) {
     return this.jobService.delete(userId, jobId)
+  }
+
+  @Post('collect')
+  collect(@UserId() userId: string, @Body('id') jobId: string) {
+    return this.jobService.collect(userId, jobId)
   }
 }
