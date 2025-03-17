@@ -7,6 +7,7 @@ import { User } from '@/user/schema/user.schema'
 import { Interview } from '@/interview/schema/interview.schema'
 import { Job } from './schema/job.schema'
 import { JobListDto, JobPublishDto, JobRecommendDto } from './job.dto'
+import { collaborativeFiltering } from './collaborative-filtering'
 import { UserType } from '@/common/enum'
 
 @Injectable()
@@ -96,14 +97,24 @@ export class JobService {
   }
 
   // todo: 根据user做推荐，先全返回
-  async recommend(id: string, recommendDto: JobRecommendDto) {
+  async recommend(userId: string, recommendDto: JobRecommendDto) {
     const { page, limit } = recommendDto
     const skip = (page - 1) * limit
 
-    const data = await this.jobModel.find().skip(skip).limit(limit).populate('company').exec()
+    const jobListData = await this.jobModel.find().populate('company').exec()
+    const interviewListData = await this.interviewModal.find().exec()
     const total = await this.jobModel.countDocuments().exec()
+    const result = collaborativeFiltering(jobListData, interviewListData)
+    const { collaborativeMatrix, userIdArray } = result
+    const index = userIdArray.findIndex((id) => new Types.ObjectId(id).equals(userId))
+    const collaborativeLine = collaborativeMatrix[index] // 每个jobList的评分
+    const list = jobListData.sort((a, b) => {
+      const scoreA = collaborativeLine[jobListData.indexOf(a)] ?? 0
+      const scoreB = collaborativeLine[jobListData.indexOf(b)] ?? 0
+      return scoreA > scoreB ? -1 : 1
+    })
 
-    return createResponse({ list: data, total })
+    return createResponse({ list: list.slice(skip, skip + limit), total })
   }
 
   async detail(jobId: string, userId: string) {
